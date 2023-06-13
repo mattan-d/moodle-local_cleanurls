@@ -80,4 +80,3 @@ $CFG->uncleanedurl = $url->raw_out(false);
 // If we require any file which defines NO_MOODLE_COOKIES then it will complain
 // so perhaps safer to black list these. May be similar issue with other defines.
 require($file);
-

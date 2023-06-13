@@ -36,14 +36,16 @@ defined('MOODLE_INTERNAL') || die();
  * @copyright   2017 Catalyst IT Australia {@link http://www.catalyst-au.net}
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class coursemodule_uncleaner extends uncleaner implements hascourse_uncleaner_interface {
+class coursemodule_uncleaner extends uncleaner implements hascourse_uncleaner_interface
+{
     /**
      * Quick check if this object should be created for the given parent.
      *
      * @param uncleaner $parent
      * @return bool
      */
-    public static function can_create($parent) {
+    public static function can_create($parent)
+    {
         global $CFG;
 
         if (!is_a($parent, hascourse_uncleaner_interface::class)) {
@@ -75,7 +77,8 @@ class coursemodule_uncleaner extends uncleaner implements hascourse_uncleaner_in
      * - Reads the the cmid.
      * - Leave the rest as subpaths.
      */
-    protected function prepare_path() {
+    protected function prepare_path()
+    {
         $this->subpath = $this->parent->subpath;
         $this->modname = array_shift($this->subpath);
         $modid = array_shift($this->subpath);
@@ -85,18 +88,21 @@ class coursemodule_uncleaner extends uncleaner implements hascourse_uncleaner_in
         $this->cmid = ($cmid === (string)(int)$cmid) ? (int)$cmid : null;
     }
 
-    public function get_modname() {
+    public function get_modname()
+    {
         return $this->modname;
     }
 
-    public function get_cmid() {
+    public function get_cmid()
+    {
         return $this->cmid;
     }
 
     /**
      * @return moodle_url
      */
-    public function get_unclean_url() {
+    public function get_unclean_url()
+    {
         global $DB;
 
         if ($DB->count_records('modules', ['name' => $this->modname]) != 1) {
@@ -110,6 +116,7 @@ class coursemodule_uncleaner extends uncleaner implements hascourse_uncleaner_in
             $path = "/mod/{$this->modname}/view.php";
             $this->parameters['id'] = $this->cmid;
         }
+
         return new moodle_url($path, $this->parameters);
     }
 
@@ -118,7 +125,8 @@ class coursemodule_uncleaner extends uncleaner implements hascourse_uncleaner_in
      *
      * @return stdClass Course data object.
      */
-    public function get_course() {
+    public function get_course()
+    {
         return $this->parent->get_course();
     }
 }
