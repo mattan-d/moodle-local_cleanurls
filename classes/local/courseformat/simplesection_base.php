@@ -64,9 +64,9 @@ abstract class simplesection_base extends uncleaner implements hascourse_unclean
         $sections = $cminfo->get_section_info_all();
 
         foreach ($sections as $sectioninfo) {
-            if ($sectioninfo->section == 0) {
-                //continue; // Ignore root section.
-            }
+            /*         if ($sectioninfo->section == 0) {
+                         //continue; // Ignore root section.
+                     }*/
             $name = get_section_name($course, $sectioninfo->section);
             $slug = clean_moodle_url::sluggify($name, false);
 
