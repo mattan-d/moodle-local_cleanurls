@@ -104,6 +104,7 @@ class flexsections extends uncleaner implements hascourse_uncleaner_interface, c
 
     private static function create_section_tree_database_info($courseid, &$sections, &$parents) {
         global $DB;
+
         $sectionstmp = $DB->get_records('course_sections', ['course' => $courseid], 'section ASC');
         $parentstmp = $DB->get_records('course_format_options', ['courseid' => $courseid, 'name' => 'parent'], 'sectionid ASC');
 
@@ -130,6 +131,7 @@ class flexsections extends uncleaner implements hascourse_uncleaner_interface, c
     private $coursemodule = null;
 
     protected function prepare_path() {
+        
         $this->sectiontree = self::create_section_tree($this->get_course()->id);
         $this->sectionpath = [$this->sectiontree];
 

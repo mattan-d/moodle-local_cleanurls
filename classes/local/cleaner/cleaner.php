@@ -119,7 +119,7 @@ class cleaner {
     private function check_path_allowed($path) {
         global $CFG;
 
-        return (!is_dir($CFG->dirroot.$path) && !is_file($CFG->dirroot.$path.".php"));
+        return (!is_dir($CFG->dirroot . $path) && !is_file($CFG->dirroot . $path . ".php"));
     }
 
     private function check_test_url() {
@@ -153,10 +153,10 @@ class cleaner {
         while ($catid) {
             $cat = $DB->get_record('course_categories', ['id' => $catid]);
             $slug = clean_moodle_url::sluggify($cat->name, false);
-            $newpath = '/'.$slug.'-'.$catid.$newpath;
+            $newpath = '/' . $slug . '-' . $catid . $newpath;
             $catid = $cat->parent;
         }
-        $newpath = '/category'.$newpath;
+        $newpath = '/category' . $newpath;
 
         if ($this->check_path_allowed($newpath)) {
             $this->path = $newpath;
@@ -174,7 +174,8 @@ class cleaner {
 
         $course = get_course($this->params['id']);
 
-        $newpath = '/course/' . urlencode($course->shortname);
+        // Refined by Mattan
+        $newpath = '/' . urlencode($course->shortname);
         if ($this->check_path_allowed($newpath)) {
             $this->path = $newpath;
             unset($this->params['id']);
@@ -194,7 +195,8 @@ class cleaner {
         $courseid = $DB->get_field('course', 'id', ['shortname' => $this->params['name']]);
         $course = get_course($courseid);
 
-        $newpath = '/course/' . urlencode($course->shortname);
+        // Refined by Mattan
+        $newpath = '/' . urlencode($course->shortname);
         if ($this->check_path_allowed($newpath)) {
             $this->path = $newpath;
             unset($this->params['name']);
@@ -214,7 +216,9 @@ class cleaner {
 
         $subpath = $this->clean_course_module_view_format($course, $cm);
         $shortname = urlencode($course->shortname);
-        $newpath = "/course/{$shortname}{$subpath}";
+
+        // Refined by Mattan
+        $newpath = "/{$shortname}{$subpath}";
 
         if ($this->check_path_allowed($newpath)) {
             $this->path = $newpath;
@@ -246,7 +250,9 @@ class cleaner {
 
         $slug = $DB->get_field('course', 'shortname', ['id' => $this->params['id']]);
         $slug = urlencode($slug);
-        $newpath = "/course/{$slug}/{$mod}";
+
+        // Refined by Mattan
+        $newpath = "/{$slug}/{$mod}";
         if ($this->check_path_allowed($newpath)) {
             $this->path = $newpath;
             unset($this->params['id']);
@@ -264,7 +270,7 @@ class cleaner {
         }
 
         $newpath = $DB->get_field('course', 'shortname', ['id' => $this->params['id']]);
-        $newpath = '/course/'.urlencode($newpath).'/user';
+        $newpath = '/' . urlencode($newpath) . '/user';
         if ($this->check_path_allowed($newpath)) {
             $this->path = $newpath;
             unset($this->params['id']);
@@ -288,7 +294,7 @@ class cleaner {
         if ($this->params['course'] != 1) {
             $coursename = $DB->get_field('course', 'shortname', ['id' => $this->params['course']]);
             $coursename = urlencode($coursename);
-            $newpath = "/course/{$coursename}{$newpath}";
+            $newpath = "/{$coursename}{$newpath}";
             unset($this->params['course']);
         }
 
@@ -332,7 +338,7 @@ class cleaner {
             return false;
         }
         $newpath = $DB->get_field('user', 'username', ['id' => $this->params['id']]);
-        $newpath = '/user/'.urlencode($newpath);
+        $newpath = '/user/' . urlencode($newpath);
         if ($this->check_path_allowed($newpath)) {
             $this->path = $newpath;
             unset($this->params['id']);
@@ -344,6 +350,7 @@ class cleaner {
 
     private function create_cleaned_url() {
         // Add back moodle path.
+
         $this->path = $this->moodlepath . '/' . ltrim($this->path, '/');
 
         // URL was not rewritten.
@@ -447,6 +454,7 @@ class cleaner {
         }
 
         $classname = clean_moodle_url::get_format_support($course->format);
+
         if (is_null($classname)) {
             return;
         }
@@ -461,7 +469,6 @@ class cleaner {
         if (is_null($section)) {
             return;
         }
-
         $sectionpath = $classname::get_courseformat_section_clean_subpath($course, $section);
 
         if (!is_null($sectionpath)) {
@@ -469,5 +476,6 @@ class cleaner {
             unset($this->params['section']);
             unset($this->params['sectionid']);
         }
+
     }
 }

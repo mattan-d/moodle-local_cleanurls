@@ -76,13 +76,13 @@ class clean_moodle_url extends moodle_url {
      * obvious, but isn't used at all for routing. Usually it is prefixed
      * with and id such as /page/1234-some-nice-name
      *
-     * @param string  $string     a string to url escape and prettify
+     * @param string $string a string to url escape and prettify
      * @param boolean $dashprefix if present a dash is prepended
      * @return string
      */
     public static function sluggify($string, $dashprefix) {
         $string = wordpress_util::sanitize_title_with_dashes($string);
-        return ($dashprefix ? '-' : '').$string;
+        return ($dashprefix ? '-' : '') . $string;
     }
 
     /**

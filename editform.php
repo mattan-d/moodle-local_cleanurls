@@ -24,19 +24,16 @@
 require_once(__DIR__ . '/../../config.php');
 require_once($CFG->libdir . '/formslib.php');
 
-class seo_edit_form extends moodleform
-{
+class seo_edit_form extends moodleform {
     protected $title = '';
     protected $description = '';
 
-    public function __construct($actionurl, $courseid)
-    {
+    public function __construct($actionurl, $courseid) {
         $this->courseid = $courseid;
         parent::__construct($actionurl);
     }
 
-    public function definition()
-    {
+    public function definition() {
         global $DB;
 
         $mform =& $this->_form;
@@ -48,31 +45,40 @@ class seo_edit_form extends moodleform
 
             // Then show the fields about where this block appears.
             $mform->addElement('header', 'editcampaignheader', 'Custom SEO URL\'S');
+            $mform->addElement('hidden', 'courseid', $this->courseid);
 
             foreach ($course_mods as $module) {
                 $cm = get_coursemodule_from_id(null, $module->id, $course->id, false, MUST_EXIST);
+                $modurl = new moodle_url('/mod/' . $cm->modname . '/view.php', ['id' => $cm->id]);
+
                 $mform->addElement('text', 'cm[' . $cm->id . ']', $cm->name);
+                // $mform->addElement('html', $modurl);
             }
         }
 
         $this->add_action_buttons(true, get_string('savechanges'));
     }
 
-    public function validation($data, $files)
-    {
+    public function validation($data, $files) {
+        global $DB;
         $errors = parent::validation($data, $files);
+
+        foreach ($data['cm'] as $cm => $name) {
+            $iexist = $DB->get_record('local_cleanurls', array('course' => $data['courseid'], 'name' => $name));
+            if ($iexist && $cm != $iexist->cm) {
+                $errors['cm[' . $cm . ']'] = 'It cannot be saved. An item with that name already exists in the course.';
+            }
+        }
 
         return $errors;
     }
 
-    public function get_data()
-    {
+    public function get_data() {
         $data = parent::get_data();
         return $data;
     }
 
-    public function set_data($data)
-    {
+    public function set_data($data) {
 
         $tmp = new stdClass();
         $tmp->cm = array();
@@ -84,7 +90,6 @@ class seo_edit_form extends moodleform
         parent::set_data($tmp);
     }
 }
-
 
 $courseid = required_param('courseid', PARAM_INT);
 $course = get_course($courseid);

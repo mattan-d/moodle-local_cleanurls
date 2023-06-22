@@ -14,7 +14,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-
 /**
  * local_cleanurls plugin settings
  *
@@ -30,9 +29,9 @@ if ($hassiteconfig) {
     $webservertesturl = new moodle_url('/local/cleanurls/webservertest.php');
 
     $ADMIN->add('localplugins', new admin_externalpage(
-        'local_cleanurls_webservertest',
-        new lang_string('webservertest', 'local_cleanurls'),
-        $webservertesturl
+            'local_cleanurls_webservertest',
+            new lang_string('webservertest', 'local_cleanurls'),
+            $webservertesturl
     ));
 
     $ADMIN->add('localplugins', $settings);
@@ -53,7 +52,7 @@ if ($hassiteconfig) {
         }
 
         $rewritetest = false;
-        $result = isset($CFG->urlrewriteclass)  && $CFG->urlrewriteclass == '\local_cleanurls\url_rewriter';
+        $result = isset($CFG->urlrewriteclass) && $CFG->urlrewriteclass == '\local_cleanurls\url_rewriter';
 
         // Now test that not only is the router configured but it is cleaning urls correctly. Note
         // that this particular test url is cleaned even if cleaning is off.
@@ -69,20 +68,20 @@ if ($hassiteconfig) {
         }
 
         $cleaningonhelp = new lang_string('cleaningonhelp', 'local_cleanurls') .
-                          ' <a href="' . $webservertesturl . '">' .
-                          new lang_string('cleaningonhelpdebug', 'local_cleanurls') .
-                          '</a><br />' . $test;
+                ' <a href="' . $webservertesturl . '">' .
+                new lang_string('cleaningonhelpdebug', 'local_cleanurls') .
+                '</a><br />' . $test;
         $settings->add(new admin_setting_configcheckbox('local_cleanurls/cleaningon',
-                        new lang_string('cleaningon',         'local_cleanurls'),
-                        $cleaningonhelp, 0));
+                new lang_string('cleaningon', 'local_cleanurls'),
+                $cleaningonhelp, 0));
 
         $settings->add(new admin_setting_configcheckbox('local_cleanurls/cleanusernames',
-                        new lang_string('cleanusernames',     'local_cleanurls'),
-                        new lang_string('cleanusernameshelp', 'local_cleanurls'), 0));
+                new lang_string('cleanusernames', 'local_cleanurls'),
+                new lang_string('cleanusernameshelp', 'local_cleanurls'), 0));
 
-        $settings->add( new admin_setting_configcheckbox('local_cleanurls/debugging',
-                        new lang_string('debugging',          'local_cleanurls'),
-                        new lang_string('debugginghelp',      'local_cleanurls'), 0));
+        $settings->add(new admin_setting_configcheckbox('local_cleanurls/debugging',
+                new lang_string('debugging', 'local_cleanurls'),
+                new lang_string('debugginghelp', 'local_cleanurls'), 0));
     }
 }
 

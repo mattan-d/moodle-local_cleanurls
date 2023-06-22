@@ -38,7 +38,7 @@ require('../../config.php');
 global $CFG, $ME;
 
 $path = required_param('q', PARAM_RAW); // TODO should use PARAM_SAFEPATH instead?
-local_cleanurls\clean_moodle_url::log("Router: \$_GET: '".$path."'");
+local_cleanurls\clean_moodle_url::log("Router: \$_GET: '" . $path . "'");
 $unclean = $CFG->wwwroot . '/' . ltrim($path, '/');
 $url = uncleaner::unclean($unclean);
 
@@ -48,6 +48,7 @@ foreach ($url->params() as $k => $v) {
 }
 
 $file = $url->out_omit_querystring();
+
 if (strpos($file, $CFG->wwwroot) === 0) {
     $file = substr($file, strlen($CFG->wwwroot));
     $ME = $file;
@@ -58,10 +59,10 @@ if (strpos($file, $CFG->wwwroot) === 0) {
     $ME = null;
 }
 
-local_cleanurls\clean_moodle_url::log("Router: including file: ".$file);
+local_cleanurls\clean_moodle_url::log("Router: including file: " . $file);
 if (!is_file($file)) {
 
-    \local_cleanurls\clean_moodle_url::log("Router: Not found, showing 404 instead: ".$file);
+    \local_cleanurls\clean_moodle_url::log("Router: Not found, showing 404 instead: " . $file);
     header("HTTP/1.0 404 Not Found");
     $PAGE->set_url($url->get_path());
     $PAGE->set_context(context_course::instance(SITEID));

@@ -65,7 +65,7 @@ class singleactivity extends uncleaner implements hascourse_uncleaner_interface,
      */
     public function get_unclean_url() {
         global $DB;
-echo 1;die;
+
         $courseid = $this->get_course()->id;
         $cm = $DB->get_record('course_modules', ['course' => $courseid], 'id,module', MUST_EXIST);
         $modname = $DB->get_field('modules', 'name', ['id' => $cm->module], MUST_EXIST);

@@ -45,10 +45,8 @@ defined('MOODLE_INTERNAL') || die();
  * @copyright   2017 Catalyst IT Australia {@link http://www.catalyst-au.net}
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-abstract class simplesection_base extends uncleaner implements hascourse_uncleaner_interface, courseformat_cleaner_interface
-{
-    private static function get_my_format()
-    {
+abstract class simplesection_base extends uncleaner implements hascourse_uncleaner_interface, courseformat_cleaner_interface {
+    private static function get_my_format() {
         $class = new ReflectionClass(static::class);
         $format = $class->getShortName();
         return $format;
@@ -59,16 +57,19 @@ abstract class simplesection_base extends uncleaner implements hascourse_unclean
      * @param $sectionslug
      * @return section_info
      */
-    public static function find_section_by_slug($course, $sectionslug)
-    {
+    public static function find_section_by_slug($course, $sectionslug) {
+
+        $sectionslug = array_shift($sectionslug);
         $cminfo = get_fast_modinfo($course);
         $sections = $cminfo->get_section_info_all();
+
         foreach ($sections as $sectioninfo) {
             if ($sectioninfo->section == 0) {
                 //continue; // Ignore root section.
             }
             $name = get_section_name($course, $sectioninfo->section);
             $slug = clean_moodle_url::sluggify($name, false);
+
             if ($slug == $sectionslug) {
                 return $sectioninfo;
             }
@@ -85,8 +86,7 @@ abstract class simplesection_base extends uncleaner implements hascourse_unclean
      * @param uncleaner $parent
      * @return bool
      */
-    public static function can_create($parent)
-    {
+    public static function can_create($parent) {
         if (!is_a($parent, hascourse_uncleaner_interface::class)) {
             return false;
         }
@@ -97,9 +97,9 @@ abstract class simplesection_base extends uncleaner implements hascourse_unclean
         }
 
         // It requires a section.
-        if (count($parent->subpath) < 1) {
-            return false;
-        }
+        /*        if (count($parent->subpath) < 0) {
+                    return false;
+                }*/
 
         return true;
     }
@@ -110,51 +110,70 @@ abstract class simplesection_base extends uncleaner implements hascourse_unclean
     /** @var int */
     protected $cmid = null;
 
-    public function get_section()
-    {
+    public function get_section() {
         return $this->section;
     }
 
-    public function get_cmid()
-    {
+    public function get_cmid() {
         return $this->cmid;
     }
 
-    protected function prepare_path()
-    {
-        $this->subpath = is_null($this->parent) ? [] : $this->parent->subpath;
-        $section = array_shift($this->subpath);
-        $coursemodule = array_shift($this->subpath);
+    protected function prepare_path() {
+        global $DB;
 
-        $this->section = self::find_section_by_slug($this->get_course(), $section);
+        // Refined by Mattan
+        $this->subpath = is_null($this->parent) ? [] : $this->parent->subpath;
+        $this->sectionpath = explode('-', $this->subpath[0]);
+        $course = $this->get_course();
+
+        $this->issection = false;
+        $this->section = self::find_section_by_slug($course, $this->subpath);
+
+        if (is_object($this->section)) {
+            $section = array_shift($this->subpath);
+            $this->issection = true;
+        }
+        $coursemodule = array_shift($this->subpath);
 
         if (is_null($coursemodule)) {
             $this->mypath = $section;
         } else {
-            list($cmid) = explode('-', $coursemodule);
-            $this->cmid = (int)$cmid;
+            $customname = $DB->get_record('local_cleanurls', array('name' => urldecode($coursemodule), 'course' => $course->id));
+            if ($customname) {
+                $this->cmid = (int) $customname->cm;
+            }
+
+            if ($this->issection) {
+                list($cmid) = explode('-', $coursemodule);
+                $this->cmid = (int) $cmid;
+            }
+
             $this->mypath .= "{$section}/{$coursemodule}";
         }
     }
 
-    protected function prepare_parameters()
-    {
+    protected function prepare_parameters() {
         parent::prepare_parameters();
+
+        // Refined by Mattan
         if (is_null($this->cmid)) {
             $this->parameters['name'] = $this->get_course()->shortname;
-            $this->parameters['section'] = $this->section->section;
+
+            if ($this->issection) {
+                $this->parameters['section'] = $this->section->section;
+            }
         }
     }
 
     /**
      * @return moodle_url
      */
-    public function get_unclean_url()
-    {
+    public function get_unclean_url() {
+
         // Section must always be provided, regardless if uncleaning section or course module.
-        if (is_null($this->section)) {
-            return null;
-        }
+        /*        if (is_null($this->section)) {
+                    return null;
+                }*/
 
         if (!empty($this->cmid)) {
             return $this->get_unclean_coursemodule_url();
@@ -168,8 +187,7 @@ abstract class simplesection_base extends uncleaner implements hascourse_unclean
      *
      * @return stdClass Course data object.
      */
-    public function get_course()
-    {
+    public function get_course() {
         return $this->parent->get_course();
     }
 
@@ -180,22 +198,23 @@ abstract class simplesection_base extends uncleaner implements hascourse_unclean
      * @param cm_info $cm The Course Module being cleaned.
      * @return string          The relative path from the course in which this course module will be accessed.
      */
-    public static function get_courseformat_module_clean_subpath(stdClass $course, cm_info $cm)
-    {
+    public static function get_courseformat_module_clean_subpath(stdClass $course, cm_info $cm) {
         global $DB;
 
         $section = get_section_name($course, $cm->sectionnum);
         $section = clean_moodle_url::sluggify($section, false);
 
+        // Refined by Mattan
         $customname = $DB->get_record('local_cleanurls', array('cm' => $cm->id));
 
-        if($customname && $customname->name != ''){
-            $title = clean_moodle_url::sluggify($customname->name, true);
+        if ($customname && $customname->name != '') {
+            $title = urlencode($customname->name); //clean_moodle_url::sluggify($customname->name, true);
         } else {
-            $title = clean_moodle_url::sluggify($cm->name, true);
+            $title = urlencode($cm->name); //clean_moodle_url::sluggify($cm->name, true);
         }
 
-        return "{$section}/{$cm->id}{$title}";
+        // return "{$section}/{$cm->id}{$title}";
+        return "{$title}";
     }
 
     /**
@@ -205,8 +224,7 @@ abstract class simplesection_base extends uncleaner implements hascourse_unclean
      * @param int $section The section number requested.
      * @return string The relative path from the course in which this section is.
      */
-    public static function get_courseformat_section_clean_subpath(stdClass $course, $section)
-    {
+    public static function get_courseformat_section_clean_subpath(stdClass $course, $section) {
         if (is_null($section)) {
             return '';
         }
@@ -216,8 +234,7 @@ abstract class simplesection_base extends uncleaner implements hascourse_unclean
         return "/{$section}";
     }
 
-    private function get_unclean_coursemodule_url()
-    {
+    private function get_unclean_coursemodule_url() {
         $cms = get_fast_modinfo($this->get_course())->get_cms();
         if (!array_key_exists($this->cmid, $cms)) {
             return null;
@@ -229,8 +246,7 @@ abstract class simplesection_base extends uncleaner implements hascourse_unclean
         return new moodle_url("/mod/{$cm->modname}/view.php", $this->parameters);
     }
 
-    private function get_unclean_section_url()
-    {
+    private function get_unclean_section_url() {
         return new moodle_url("/course/view.php", $this->parameters);
     }
 }

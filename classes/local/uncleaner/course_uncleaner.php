@@ -42,9 +42,9 @@ class course_uncleaner extends uncleaner implements hascourse_uncleaner_interfac
      */
     public static function list_child_options() {
         return [
-            user_course_uncleaner::class,
-            courseformat_uncleaner::class,
-            coursemodule_uncleaner::class,
+                user_course_uncleaner::class,
+                courseformat_uncleaner::class,
+                coursemodule_uncleaner::class,
         ];
     }
 
@@ -60,8 +60,9 @@ class course_uncleaner extends uncleaner implements hascourse_uncleaner_interfac
             return false;
         }
 
+        // Refined by Mattan
         // Next token must be 'course'.
-        if ((count($parent->subpath) < 1) || ($parent->subpath[0] != 'course')) {
+        if ((count($parent->subpath) < 1)) {
             return false;
         }
 
@@ -77,8 +78,9 @@ class course_uncleaner extends uncleaner implements hascourse_uncleaner_interfac
      * - Leave the rest as subpaths.
      */
     protected function prepare_path() {
+        // Refined by Mattan
         $this->subpath = $this->parent->subpath;
-        array_shift($this->subpath);
+        // array_shift($this->subpath);
         $this->mypath = array_shift($this->subpath);
     }
 
@@ -108,6 +110,7 @@ class course_uncleaner extends uncleaner implements hascourse_uncleaner_interfac
     }
 
     public function get_course_shortname() {
+
         if (is_null($this->mypath)) {
             return null;
         }
