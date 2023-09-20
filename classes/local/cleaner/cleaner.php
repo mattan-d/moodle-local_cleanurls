@@ -360,6 +360,11 @@ class cleaner {
         }
 
         // Create new URL.
+        if (str_contains($this->originalurl->get_path(), 'badges')) {
+            return;
+        }
+
+        // Create new URL.
         $this->cleanedurl = new clean_moodle_url($this->originalurl);
         $this->cleanedurl->set_path($this->path);
         $this->cleanedurl->remove_all_params();
