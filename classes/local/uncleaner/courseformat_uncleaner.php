@@ -73,7 +73,7 @@ class courseformat_uncleaner extends uncleaner implements hascourse_uncleaner_in
             return false;
         }
 
-        if ($parent->get_mypath() == 'mybadges.php') {
+        if (str_contains($parent->get_mypath(), 'badge')) {
             return false;
         }
 

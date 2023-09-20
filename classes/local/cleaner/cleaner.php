@@ -360,7 +360,7 @@ class cleaner {
         }
 
         // Create new URL.
-        if (str_contains($this->originalurl->get_path(), 'badges')) {
+        if (str_contains($this->originalurl->get_path(), 'badge')) {
             return;
         }
 
