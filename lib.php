@@ -21,8 +21,7 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-function local_cleanurls_extend_settings_navigation($settingsnav, $context)
-{
+function local_cleanurls_extend_settings_navigation($settingsnav, $context) {
     global $CFG, $PAGE, $DB;
 
     // Only add this settings item on non-site course pages.
@@ -30,16 +29,25 @@ function local_cleanurls_extend_settings_navigation($settingsnav, $context)
         return;
     }
 
+    if (!$PAGE->course->id) {
+        return;
+    }
+
+    $context = context_course::instance($PAGE->course->id);
+    if (!has_capability('moodle/course:update', $context)) {
+        return;
+    }
+
     $editformpage = new moodle_url('/local/cleanurls/editform.php', array('courseid' => $PAGE->course->id));
     if ($settingnode = $settingsnav->find('courseadmin', navigation_node::TYPE_COURSE)) {
         $str = get_string('pluginname', 'local_cleanurls');
         $node = navigation_node::create(
-            $str,
-            $editformpage,
-            navigation_node::NODETYPE_LEAF,
-            null,
-            'editseo',
-            new pix_icon('t/contextmenu', $str)
+                $str,
+                $editformpage,
+                navigation_node::NODETYPE_LEAF,
+                null,
+                'editseo',
+                new pix_icon('t/contextmenu', $str)
         );
         if ($PAGE->url->compare($editformpage, URL_MATCH_BASE)) {
             $node->make_active();
