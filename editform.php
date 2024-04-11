@@ -28,8 +28,10 @@ class seo_edit_form extends moodleform {
     protected $title = '';
     protected $description = '';
 
-    public function __construct($actionurl, $courseid) {
+    public function __construct($actionurl, $courseid, $contextid) {
         $this->courseid = $courseid;
+        $this->contextid = $contextid;
+
         parent::__construct($actionurl);
     }
 
@@ -41,11 +43,18 @@ class seo_edit_form extends moodleform {
         $course_mods = get_course_mods($this->courseid);
         $course = get_course($this->courseid);
 
-        if ($course_mods) {
+        // Then show the fields about where this block appears.
+        $mform->addElement('hidden', 'courseid', $this->courseid);
+        $mform->addElement('hidden', 'contextid', $this->contextid);
 
-            // Then show the fields about where this block appears.
-            $mform->addElement('header', 'editcampaignheader', 'Custom SEO URL\'S');
-            $mform->addElement('hidden', 'courseid', $this->courseid);
+        $mform->addElement('header', 'editcampaignheader', 'Additional Meta Tags');
+        $mform->addElement('text', 'title[0]', 'Title', 1);
+        $mform->addElement('textarea', 'description[0]', get_string('description'), array('rows' => 15, 'cols' => 40));
+        $mform->setType('description', PARAM_RAW);
+
+        $mform->addElement('header', 'editcampaignheader', 'Custom SEO URL\'S');
+
+        if ($course_mods) {
 
             foreach ($course_mods as $module) {
                 $cm = get_coursemodule_from_id(null, $module->id, $course->id, false, MUST_EXIST);
@@ -64,9 +73,11 @@ class seo_edit_form extends moodleform {
         $errors = parent::validation($data, $files);
 
         foreach ($data['cm'] as $cm => $name) {
-            $iexist = $DB->get_record('local_cleanurls', array('course' => $data['courseid'], 'name' => $name));
-            if ($iexist && $cm != $iexist->cm) {
-                $errors['cm[' . $cm . ']'] = 'It cannot be saved. An item with that name already exists in the course.';
+            if ($name) {
+                $iexist = $DB->get_record('local_cleanurls', array('course' => $data['courseid'], 'name' => $name));
+                if ($iexist && $cm != $iexist->cm) {
+                    $errors['cm[' . $cm . ']'] = 'It cannot be saved. An item with that name already exists in the course.';
+                }
             }
         }
 
@@ -85,6 +96,8 @@ class seo_edit_form extends moodleform {
 
         foreach ($data as $cm) {
             $tmp->cm[$cm->cm] = $cm->name;
+            $tmp->title[$cm->cm] = $cm->title;
+            $tmp->description[$cm->cm] = $cm->description;
         }
 
         parent::set_data($tmp);
@@ -92,19 +105,20 @@ class seo_edit_form extends moodleform {
 }
 
 $courseid = required_param('courseid', PARAM_INT);
+$contextid = required_param('contextid', PARAM_INT);
 $course = get_course($courseid);
 
 $context = context_system::instance();
 $PAGE->set_context($context);
 
-$urlparams = array('courseid' => $courseid);
+$urlparams = ['courseid' => $courseid, 'contextid' => $contextid];
 $customseo = new moodle_url('/local/cleanurls/editform.php', $urlparams);
 $courseURL = new moodle_url('/course/view.php', array('id' => $courseid));
 
 $PAGE->set_url('/local/cleanurls/editform.php', $urlparams);
 $PAGE->set_pagelayout('admin');
 
-$mform = new seo_edit_form($PAGE->url, $courseid);
+$mform = new seo_edit_form($PAGE->url, $courseid, $contextid);
 
 $cleanurls = $DB->get_records('local_cleanurls', array('course' => $courseid));
 $mform->set_data($cleanurls);
@@ -119,12 +133,22 @@ if ($mform->is_cancelled()) {
         $DB->delete_records('local_cleanurls', array('course' => $courseid));
     }
 
+    $metadata = new stdClass();
+    $metadata->title = $data->title[0];
+    $metadata->description = $data->description[0];
+    $metadata->contextid = $data->contextid;
+    $metadata->course = $courseid;
+    $DB->insert_record('local_cleanurls', $metadata);
+
     foreach ($data->cm as $modid => $modname) {
         $module = new stdClass();
         $module->cm = $modid;
         $module->name = $modname;
         $module->course = $courseid;
-        $DB->insert_record('local_cleanurls', $module);
+
+        if ($modname) {
+            $DB->insert_record('local_cleanurls', $module);
+        }
     }
 
     $cache = cache::make('local_cleanurls', 'outgoing');

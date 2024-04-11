@@ -22,7 +22,7 @@
  */
 
 function local_cleanurls_extend_settings_navigation($settingsnav, $context) {
-    global $CFG, $PAGE, $DB;
+    global $CFG, $PAGE, $DB, $USER;
 
     // Only add this settings item on non-site course pages.
     if (!$PAGE->course or $PAGE->course->id == 1) {
@@ -38,7 +38,10 @@ function local_cleanurls_extend_settings_navigation($settingsnav, $context) {
         return;
     }
 
-    $editformpage = new moodle_url('/local/cleanurls/editform.php', array('courseid' => $PAGE->course->id));
+    $editformpage = new moodle_url('/local/cleanurls/editform.php', [
+            'courseid' => $PAGE->course->id,
+            'contextid' => $PAGE->context->id,
+    ]);
     if ($settingnode = $settingsnav->find('courseadmin', navigation_node::TYPE_COURSE)) {
         $str = get_string('pluginname', 'local_cleanurls');
         $node = navigation_node::create(
@@ -53,5 +56,9 @@ function local_cleanurls_extend_settings_navigation($settingsnav, $context) {
             $node->make_active();
         }
         $settingnode->add_node($node);
+    }
+
+    if (is_siteadmin($USER)) {
+        echo html_writer::tag('a', 'SEO', ['class' => 'cleanurl-btn', 'href' => $editformpage]);
     }
 }

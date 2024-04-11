@@ -30,8 +30,7 @@ defined('MOODLE_INTERNAL') || die();
  * @param int $oldversion The version number of the plugin that was installed.
  * @return boolean
  */
-function xmldb_local_cleanurls_upgrade($oldversion)
-{
+function xmldb_local_cleanurls_upgrade($oldversion) {
     global $CFG, $DB;
 
     $dbman = $DB->get_manager();
@@ -53,6 +52,31 @@ function xmldb_local_cleanurls_upgrade($oldversion)
         // savepoint reached.
         upgrade_plugin_savepoint(true, 2023061301, 'local', 'cleanurls');
 
+    }
+
+    if ($oldversion < 2024041103) {
+        $table = new xmldb_table('local_cleanurls');
+        if ($dbman->table_exists($table)) {
+
+            $field = new xmldb_field('contextid', XMLDB_TYPE_INTEGER, '10', null, true, null, 0);
+
+            if (!$dbman->field_exists($table, $field)) {
+                $dbman->add_field($table, $field);
+            }
+
+            $field = new xmldb_field('title', XMLDB_TYPE_CHAR, '255', null, null, null, null);
+            if (!$dbman->field_exists($table, $field)) {
+                $dbman->add_field($table, $field);
+            }
+
+            $field = new xmldb_field('description', XMLDB_TYPE_TEXT, 'big', null, null, null, null);
+            if (!$dbman->field_exists($table, $field)) {
+                $dbman->add_field($table, $field);
+            }
+        }
+
+        // savepoint reached.
+        upgrade_plugin_savepoint(true, 2024041103, 'local', 'cleanurls');
     }
 
     return true;

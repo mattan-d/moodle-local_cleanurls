@@ -1,0 +1,9 @@
+.cleanurl-btn {
+    position: fixed;
+    bottom: 10px;
+    left: 25px;
+    background-color: #F3CCE980;
+    border-radius: 50px;
+    padding: 10px;
+    z-index: 999;
+}
