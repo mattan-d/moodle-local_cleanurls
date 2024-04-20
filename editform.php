@@ -91,13 +91,18 @@ class seo_edit_form extends moodleform {
 
     public function set_data($data) {
 
+        $contextid = required_param('contextid', PARAM_INT);
+
         $tmp = new stdClass();
         $tmp->cm = array();
 
         foreach ($data as $cm) {
             $tmp->cm[$cm->cm] = $cm->name;
-            $tmp->title[$cm->cm] = $cm->title;
-            $tmp->description[$cm->cm] = $cm->description;
+
+            if ($cm->contextid == $contextid) {
+                $tmp->title[$cm->cm] = $cm->title;
+                $tmp->description[$cm->cm] = $cm->description;
+            }
         }
 
         parent::set_data($tmp);
@@ -130,7 +135,8 @@ if ($mform->is_cancelled()) {
     $cmid = $DB->get_records('local_cleanurls', array('course' => $courseid));
 
     if ($cmid) {
-        $DB->delete_records('local_cleanurls', array('course' => $courseid));
+        $DB->delete_records('local_cleanurls', array('course' => $courseid, 'contextid' => 0));
+        $DB->delete_records('local_cleanurls', array('course' => $courseid, 'contextid' => $contextid));
     }
 
     $metadata = new stdClass();
