@@ -131,7 +131,8 @@ class course_uncleaner extends uncleaner implements hascourse_uncleaner_interfac
         if (is_null($this->course)) {
             $this->course = $DB->get_record('course', ['shortname' => $shortname]);
             if (!$this->course) {
-                redirect('/course', 'This course doesn\'t exist.');
+                //redirect('/course', 'This course doesn\'t exist.');
+                redirect('/course');
             }
         }
 
