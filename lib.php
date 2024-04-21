@@ -58,7 +58,7 @@ function local_cleanurls_extend_settings_navigation($settingsnav, $context) {
         $settingnode->add_node($node);
     }
 
-    if (is_siteadmin($USER)) {
+    if ($PAGE->user_is_editing() && is_siteadmin($USER)) {
         echo html_writer::tag('a', 'SEO', ['class' => 'cleanurl-btn', 'href' => $editformpage]);
     }
 }
