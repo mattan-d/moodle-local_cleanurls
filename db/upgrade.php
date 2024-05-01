@@ -79,5 +79,20 @@ function xmldb_local_cleanurls_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2024041103, 'local', 'cleanurls');
     }
 
+    if ($oldversion < 2024050100) {
+        $table = new xmldb_table('local_cleanurls');
+        if ($dbman->table_exists($table)) {
+
+            $field = new xmldb_field('sectionid', XMLDB_TYPE_INTEGER, '10', null, true, null, 0);
+
+            if (!$dbman->field_exists($table, $field)) {
+                $dbman->add_field($table, $field);
+            }
+        }
+
+        // savepoint reached.
+        upgrade_plugin_savepoint(true, 2024050100, 'local', 'cleanurls');
+    }
+
     return true;
 }

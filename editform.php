@@ -28,9 +28,10 @@ class seo_edit_form extends moodleform {
     protected $title = '';
     protected $description = '';
 
-    public function __construct($actionurl, $courseid, $contextid) {
+    public function __construct($actionurl, $courseid, $contextid, $sectionid) {
         $this->courseid = $courseid;
         $this->contextid = $contextid;
+        $this->sectionid = $sectionid;
 
         parent::__construct($actionurl);
     }
@@ -46,6 +47,7 @@ class seo_edit_form extends moodleform {
         // Then show the fields about where this block appears.
         $mform->addElement('hidden', 'courseid', $this->courseid);
         $mform->addElement('hidden', 'contextid', $this->contextid);
+        $mform->addElement('hidden', 'sectionid', $this->sectionid);
 
         $mform->addElement('header', 'editcampaignheader', 'Additional Meta Tags');
         $mform->addElement('text', 'title[0]', 'Title', 1);
@@ -92,6 +94,7 @@ class seo_edit_form extends moodleform {
     public function set_data($data) {
 
         $contextid = required_param('contextid', PARAM_INT);
+        $sectionid = required_param('sectionid', PARAM_INT);
 
         $tmp = new stdClass();
         $tmp->cm = array();
@@ -99,7 +102,7 @@ class seo_edit_form extends moodleform {
         foreach ($data as $cm) {
             $tmp->cm[$cm->cm] = $cm->name;
 
-            if ($cm->contextid == $contextid) {
+            if ($cm->contextid == $contextid && $cm->sectionid == $sectionid) {
                 $tmp->title[$cm->cm] = $cm->title;
                 $tmp->description[$cm->cm] = $cm->description;
             }
@@ -111,6 +114,7 @@ class seo_edit_form extends moodleform {
 
 $courseid = required_param('courseid', PARAM_INT);
 $contextid = required_param('contextid', PARAM_INT);
+$sectionid = required_param('sectionid', PARAM_INT);
 $course = get_course($courseid);
 
 $context = context_system::instance();
@@ -123,7 +127,7 @@ $courseURL = new moodle_url('/course/view.php', array('id' => $courseid));
 $PAGE->set_url('/local/cleanurls/editform.php', $urlparams);
 $PAGE->set_pagelayout('admin');
 
-$mform = new seo_edit_form($PAGE->url, $courseid, $contextid);
+$mform = new seo_edit_form($PAGE->url, $courseid, $contextid, $sectionid);
 
 $cleanurls = $DB->get_records('local_cleanurls', array('course' => $courseid));
 $mform->set_data($cleanurls);
@@ -136,13 +140,14 @@ if ($mform->is_cancelled()) {
 
     if ($cmid) {
         $DB->delete_records('local_cleanurls', array('course' => $courseid, 'contextid' => 0));
-        $DB->delete_records('local_cleanurls', array('course' => $courseid, 'contextid' => $contextid));
+        $DB->delete_records('local_cleanurls', array('course' => $courseid, 'contextid' => $contextid, 'sectionid' => $sectionid));
     }
 
     $metadata = new stdClass();
     $metadata->title = $data->title[0];
     $metadata->description = $data->description[0];
     $metadata->contextid = $data->contextid;
+    $metadata->sectionid = $data->sectionid;
     $metadata->course = $courseid;
     $DB->insert_record('local_cleanurls', $metadata);
 

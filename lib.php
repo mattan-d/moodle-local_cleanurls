@@ -38,9 +38,11 @@ function local_cleanurls_extend_settings_navigation($settingsnav, $context) {
         return;
     }
 
+    $sectionid = optional_param('section', 0, PARAM_INT);
     $editformpage = new moodle_url('/local/cleanurls/editform.php', [
             'courseid' => $PAGE->course->id,
             'contextid' => $PAGE->context->id,
+            'sectionid' => $sectionid
     ]);
     if ($settingnode = $settingsnav->find('courseadmin', navigation_node::TYPE_COURSE)) {
         $str = get_string('pluginname', 'local_cleanurls');
